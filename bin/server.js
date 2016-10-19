@@ -50,10 +50,9 @@ function print(text) {
 			}
 		}
 
-		svg = qr.createSvgTag(1, 0);
+		svg = qr.createSvgTag(1, 2);
 		var qrsize = svg.match(/width\=\"([0-9]+)/i)[1];
 		var density = Math.floor(72*720/qrsize);
-		console.log(density);
 
 		let smallSize = [720, 150];
 		size = [smallSize[0], smallSize[0]+smallSize[1]];
