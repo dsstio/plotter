@@ -79,7 +79,12 @@ function print(text) {
 
 		write([0x1a]); // Print
 
-		fs.writeFile('/dev/usb/lp0', buffer.slice(0,pos));
+		if (debug) {
+			var child = child_process.spawn('convert', ['-size',size.reverse().join('x'),'-depth',1,'gray:-','temp.png']);
+			child.stdin.end(result);
+		} else {
+			fs.writeFile('/dev/usb/lp0', buffer.slice(0,pos));
+		}
 
 		function write(data) {
 			data.forEach(value => {
