@@ -42,9 +42,9 @@ function print(text) {
 		'-fill','white',
 		'-stroke','white',
 		'-pointsize','200',
-		'-draw','"text 0,200 \''+text.replace(/[^a-z0-9 \.\!\?,]/gi, c => '\\'+c)+'\'"',
+		'-draw','text 0,200 "'+text.replace(/\"/g, c => '\\"')+'"',
 		'-trim',
-		'-resize','"'+size.join('x')+'>"',
+		'-resize',size.join('x')+'>',
 		'-gravity','center',
 		'-background','black',
 		'-extent',size.join('x'),
@@ -52,56 +52,49 @@ function print(text) {
 		'-flop',
 		'-depth','1',
 		'gray:-'
-	].join(' ');
+	];
 
-	child_process.exec(
-		'convert '+args,
-		{maxBuffer: 1024*1024, encoding: 'buffer'},
-		(err, stdout) => {
-			if (err) return console.log(err);
+	var result = [];
+	var child = child_process.spawn('convert', args);
+	child.stderr.on('data', data => console.error(data.toString()));
+	child.stdout.on('data', data => result.push(data));
+	child.on('close', () => {
+		result = Buffer.concat(result);
 
-			fs.writeFileSync('image.raw', stdout);
+		let buffer = new Buffer(200*1024);
+		let pos = 0;
 
-			let buffer = new Buffer(200*1024);
-			let pos = 0;
+		write([0x1b,'@']); // Init
+		write([0x1b,'i','z',0xa6,0x0a,0x3e,0,size[0] & 0xff,size[0] >> 8,0,0,0,0]); // Set media type
+		write([0x1b,'i','K']); // Set cut type
+		write([0x1b,'i','A']); // Enable cutter
+		write([0x1b,'i','d',0,0]); // Set margin = 0
 
-			write([0x1b,'@']); // Init
-			write([0x1b,'i','z',0xa6,0x0a,0x3e,0,size[0] & 0xff,size[0] >> 8,0,0,0,0]); // Set media type
-			write([0x1b,'i','K']); // Set cut type
-			write([0x1b,'i','A']); // Enable cutter
-			write([0x1b,'i','d',0,0]); // Set margin = 0
-
-			var lb = Math.floor(size[1] / 8) + (size[1] % 8 > 0 ? 1 : 0);
-			for (let y = 0; y < size[0]; y++) {
-				write(['g', 0x00, 90]);
-				copy(stdout.slice(y*lb, (y+1)*lb));
-				for (let x = lb; lb < 90; lb++) write([0x00]);
-			}
-
-			write([0x1a]); // Print
-
-			//fs.writeFileSync('temp.bin', buffer.slice(0,pos));
-			fs.writeFile('/dev/usb/lp0', buffer.slice(0,pos));
-
-			function write(data) {
-				data.forEach(value => {
-					if (typeof value === 'string') value = value.charCodeAt(0);
-					buffer.writeUInt8(value, pos);
-					pos++;
-				})
-			}
-
-			function copy(data) {
-				//console.log(data);
-				data.copy(buffer, pos);
-				pos += data.length;
-			}
+		var lb = Math.floor(size[1] / 8) + (size[1] % 8 > 0 ? 1 : 0);
+		for (let y = 0; y < size[0]; y++) {
+			write(['g', 0x00, 90]);
+			copy(result.slice(y*lb, (y+1)*lb));
+			for (let x = lb; lb < 90; lb++) write([0x00]);
 		}
-	)
 
+		write([0x1a]); // Print
 
-	
-	//fs.writeFileSync('temp.svg', svg, 'utf8');
+		fs.writeFile('/dev/usb/lp0', buffer.slice(0,pos));
+
+		function write(data) {
+			data.forEach(value => {
+				if (typeof value === 'string') value = value.charCodeAt(0);
+				buffer.writeUInt8(value, pos);
+				pos++;
+			})
+		}
+
+		function copy(data) {
+			data.copy(buffer, pos);
+			pos += data.length;
+		}
+		fs.writeFileSync('temp.bin', result);
+	});
 }
 
 
