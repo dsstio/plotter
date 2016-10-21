@@ -3,28 +3,52 @@
 $(function () {
 
 	$('#btnprintsmall').click(function () {
-		send('#btnprintsmall', {msg:$('#text').val(), action:'printsmall'})
+		send($(this), {msg:$('#text').val(), action:'printsmall'})
 	})
 	$('#btnprintbig').click(function () {
-		send('#btnprintbig', {msg:$('#text').val(), action:'printbig'})
+		send($(this), {msg:$('#text').val(), action:'printbig'})
 	})
 	$('#btnprintqrcode').click(function () {
-		send('#btnprintqrcode', {msg:$('#text').val(), action:'printqrcode'})
+		send($(this), {msg:$('#text').val(), action:'printqrcode'})
+	})
+	$('.image').click(function () {
+		var $node = $(this);
+		send($node.find('img'), {msg:$node.attr('name'), action:'printimage'})
 	})
 	
-	function send(id, data) {
-		$(id).addClass('loading');
+	function send($node, data) {
+		$node.addClass('loading');
 		$.post({
 			url:'/api',
 			data:data,
 			success: function () {
-				$(id).removeClass('loading').addClass('btn-success');
-				setTimeout(function () { $(id).removeClass('btn-success') }, 500)
+				$node.removeClass('loading');
+				addMessage($node, 'success');
 			},
 			error: function () {
-				$(id).removeClass('loading').addClass('btn-danger');
-				setTimeout(function () { $(id).removeClass('btn-danger') }, 500)
+				$node.removeClass('loading');
+				addMessage($node, 'error');
 			}
 		})
+	}
+
+	function addMessage($node, type) {
+		var $mark;
+		if (type === 'success') {
+			$mark = '<div class="mark success"><i class="fa fa-check" aria-hidden="true"></i></div>';
+		} else {
+			$mark = '<div class="mark error"><i class="fa fa-exclamation" aria-hidden="true"></i></div>';
+		}
+		$mark = $($mark);
+		$('body').append($mark);
+
+		var position = $node.offset();
+		position.left += $node.outerWidth()-16;
+		position.top  += -16;
+		$mark.css(position);
+
+		$mark
+			.delay(1000)
+			.fadeOut(200, function () { $mark.remove() });
 	}
 })

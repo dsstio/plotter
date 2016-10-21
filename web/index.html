@@ -15,14 +15,21 @@
 	<div class="container">
 		<h1><i class="fa fa-twitter" aria-hidden="true"></i> Plotter</h1>
 
-		<h3>Simple Text</h3>
+		<h2>Simple Text</h2>
 		<div class="input-group">
 		<input type="text" class="form-control input-lg" id="text" placeholder="text">
 			<span class="input-group-btn">
-				<button class="btn btn-default btn-lg" id="btnprintsmall">Small</button>
-				<button class="btn btn-default btn-lg" id="btnprintbig">Big</button>
-				<button class="btn btn-default btn-lg" id="btnprintqrcode">QR Code</button>
+				<button class="btn btn-default btn-lg animation" id="btnprintsmall">Small</button>
+				<button class="btn btn-default btn-lg animation" id="btnprintbig">Big</button>
+				<button class="btn btn-default btn-lg animation" id="btnprintqrcode">QR Code</button>
 			</span>
+		</div>
+
+		<h2>Images</h2>
+		<div class="row">
+			{{#images}}
+				<div class="col-sm-3 image animation" name="{{key}}"><img src="{{url}}" width="100%" />{{name}}</div>
+			{{/images}}
 		</div>
 	</div>
 </body>
