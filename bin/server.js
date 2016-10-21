@@ -271,6 +271,7 @@ function getImages(src, bin, web, url) {
 					var buffer = createPrintBuffer(image, size)
 					fs.writeFileSync(binFile, buffer);
 					var child = child_process.spawn('convert', ['-size',size.join('x'),'-depth',1,'gray:-','-negate','-flop',webFile]);
+					child.stderr.on('data', data => console.error(data.toString()));
 					child.stdin.end(image);
 					child.on('close', done)
 				})
