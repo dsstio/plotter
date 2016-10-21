@@ -1,8 +1,11 @@
 <html>
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
 	<script type="text/javascript" src="/assets/jquery/jquery.min.js"></script>
 	<script type="text/javascript" src="/assets/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/assets/script/main.js"></script>
+
 	<link rel="stylesheet" type="text/css" href="/assets/bootstrap/css/bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="/assets/bootstrap/css/bootstrap-theme.min.css">
 	<link rel="stylesheet" type="text/css" href="/assets/font-awesome/css/font-awesome.min.css">
@@ -11,14 +14,16 @@
 <body>
 	<div class="container">
 		<h1><i class="fa fa-twitter" aria-hidden="true"></i> Plotter</h1>
-		<form action="/" method="POST" target="_self">
-			<div class="input-group">
-				<input type="text" class="form-control input-lg" name="print" placeholder="text">
-				<span class="input-group-btn">
-					<button class="btn btn-default btn-lg" type="submit">Print</button>
-				</span>
-			</div>
-		</form>
+
+		<h3>Simple Text</h3>
+		<div class="input-group">
+		<input type="text" class="form-control input-lg" id="text" placeholder="text">
+			<span class="input-group-btn">
+				<button class="btn btn-default btn-lg" id="btnprintsmall">Small</button>
+				<button class="btn btn-default btn-lg" id="btnprintbig">Big</button>
+				<button class="btn btn-default btn-lg" id="btnprintqrcode">QR Code</button>
+			</span>
+		</div>
 	</div>
 </body>
 </html>
