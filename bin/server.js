@@ -1,5 +1,6 @@
 "use strict"
 
+const debug = false;
 
 const fs = require('fs');
 const quu = require('quu');
