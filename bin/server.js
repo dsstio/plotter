@@ -38,6 +38,32 @@ function getPage() {
 	return fs.readFileSync(path.resolve(__dirname, '../web/index.html'), 'utf8');
 }
 
+function printSmallText(text) {
+	let size = [720, 150];
+	let args = [
+		'-colorspace','Gray',
+		'-depth','8',
+		'-size',(text.length*150)+'x200',
+		'canvas:white',
+		'-fill','black',
+		'-stroke','black',
+		'-pointsize','150',
+		'-draw','text 0,150 "'+text.replace(/\"/g, c => '\\"')+'"',
+		'-trim',
+		'-resize',size.map(v => v-20).join('x')+'>',
+		'-gravity','center',
+		'-background','white',
+		'-extent',size.join('x'),
+		'-negate',
+		'-flop',
+		'-colorspace','Gray',
+		'-depth','1',
+		'gray:-'
+	];
+
+	renderImage(size, args, false, (data) => { printImage(data, size) });
+}
+
 function printBigText(text) {
 	let size = [1600, 720];
 	let args = [
@@ -61,7 +87,7 @@ function printBigText(text) {
 	];
 	size.reverse();
 
-	renderImage(size, args);
+	renderImage(size, args, false, (data) => { printImage(data, size) });
 }
 
 function printQRCode(text) {
@@ -114,10 +140,10 @@ function printQRCode(text) {
 		'gray:-'
 	];
 
-	renderImage(size, args, svg);
+	renderImage(size, args, svg, (data) => { printImage(data, size) });
 }
 
-function renderImage(size, args, input) {
+function renderImage(size, args, input, cb) {
 	var result = [];
 	var child = child_process.spawn('convert', args);
 	
@@ -127,13 +153,17 @@ function renderImage(size, args, input) {
 	child.stdout.on('data', data => result.push(data));
 	child.on('close', () => {
 		result = Buffer.concat(result);
-		if (debug) {
-			var child = child_process.spawn('convert', ['-size',size.join('x'),'-depth',1,'gray:-','temp.png']);
-			child.stdin.end(result);
-		} else {
-			print(createPrintBuffer(result, size));
-		}
+		cb(result);
 	});
+}
+
+function printImage(image, size) {
+	if (debug) {
+		var child = child_process.spawn('convert', ['-size',size.join('x'),'-depth',1,'gray:-','-negate','-flop','temp.png']);
+		child.stdin.end(image);
+	} else {
+		sendPrintBuffer(createPrintBuffer(image, size));
+	}
 }
 
 function createPrintBuffer(image, size) {
@@ -172,7 +202,7 @@ function createPrintBuffer(image, size) {
 
 }
 
-function print(buffer) {
+function sendPrintBuffer(buffer) {
 	fs.writeFile('/dev/usb/lp0', buffer);
 }
 
