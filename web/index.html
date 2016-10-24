@@ -12,7 +12,7 @@
 	<link rel="stylesheet" type="text/css" href="/assets/style/main.css">
 </head>
 <body>
-	<div class="container">
+	<div class="container page-wrap">
 		<h1><i class="fa fa-twitter" aria-hidden="true"></i> Plotter</h1>
 
 		<h2>Simple Text</h2>
@@ -26,11 +26,14 @@
 		</div>
 
 		<h2>Images</h2>
-		<div class="row">
-			{{#images}}
-				<div class="col-sm-3 image animation" name="{{key}}"><img src="{{url}}" width="100%" />{{name}}</div>
-			{{/images}}
-		</div>
+		{{#images}}
+			<div class="image animation" name="{{key}}"><img src="{{url}}" width="100%" /><p>{{name}}</p></div>
+		{{/images}}
 	</div>
+	<footer>
+		<div class="container">
+			<a href="https://github.com/dsstio/plotter">Code is on GitHub <i class="fa fa-github" aria-hidden="true"></i></a>
+		</div>
+	</footer>
 </body>
 </html>
