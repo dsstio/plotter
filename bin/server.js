@@ -166,13 +166,15 @@ function image2buffer(filename, cb) {
 		filename,
 		'-colorspace','Gray',
 		'-depth','8',
-		'-resize','670x>',
+		'-resize','720x>',
 		'-gravity','center',
 		'-background','white',
 		'-extent','720x',
 		'-negate',
 		'-flop',
 		'-colorspace','Gray',
+		'-dither','FloydSteinberg',
+		'-monochrome',
 		'-depth','1',
 		'gray:-'
 	];
