@@ -1,5 +1,18 @@
-body {
+html, body {
+	height: 100%;
+	width: 100%;
 	background: #1da1f2;
+}
+
+body:fullscreen { overflow-y: scroll; }
+body:full-screen { overflow-y: scroll; }
+body:-webkit-full-screen { overflow-y: scroll; }
+body:-moz-full-screen { overflow-y: scroll; }
+body:-ms-full-screen { overflow-y: scroll; }
+body:-ms-fullscreen { overflow-y: scroll; }
+body:-o-full-screen { overflow-y: scroll; }
+
+#content {
 	color: #fff;
 }
 
