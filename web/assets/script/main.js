@@ -21,9 +21,16 @@ $(function () {
 		$.post({
 			url:'/api',
 			data:data,
-			success: function () {
-				$node.removeClass('loading');
-				addMessage($node, 'success');
+			success: function (response) {
+				if (response === false) {
+					$node.removeClass('loading');
+					addMessage($node, 'success');
+				} else {
+					$node.removeClass('loading');
+					addMessage($node, 'error');
+					$('#error-message').text(response);
+					$('#error-modal').modal('show');
+				}
 			},
 			error: function () {
 				$node.removeClass('loading');

@@ -33,13 +33,16 @@ app.all('/', function (req, res) {
 app.post('/api', function (req, res) {
 	const body = req.body;
 	switch (body.action) {
-		case 'printsmall': printSmallText(body.msg); break;
-		case 'printbig': printBigText(body.msg); break;
-		case 'printqrcode': printQRCode(body.msg); break;
-		case 'printimage': printImage(body.msg); break;
+		case 'printsmall': printSmallText(body.msg, check); break;
+		case 'printbig': printBigText(body.msg, check); break;
+		case 'printqrcode': printQRCode(body.msg, check); break;
+		case 'printimage': printImage(body.msg, check); break;
 		default: console.error(body);
 	}
-	res.send('thanks');
+
+	function check(result) {
+		res.send(result);
+	}
 })
 
 app.listen(9600, function (err) {
@@ -47,7 +50,9 @@ app.listen(9600, function (err) {
 	console.log('Server started on port 9600');
 })
 
-function printSmallText(text) {
+function printSmallText(text, cb) {
+	if (text.trim() === '') return cb('leerer Text geht nicht');
+
 	let size = [720, 150];
 	let args = [
 		'-colorspace','Gray',
@@ -70,10 +75,15 @@ function printSmallText(text) {
 		'gray:-'
 	];
 
-	renderImage(args, false, (data) => sendImageToPrinter(data, size));
+	renderImage(args, false, (err, data) => {
+		if (err) return cb(err);
+		sendImageToPrinter(data, size, cb)
+	});
 }
 
-function printBigText(text) {
+function printBigText(text, cb) {
+	if (text.trim() === '') return cb('leerer Text geht nicht');
+
 	let size = [1600, 720];
 	let args = [
 		'-colorspace','Gray',
@@ -96,10 +106,15 @@ function printBigText(text) {
 	];
 	size.reverse();
 
-	renderImage(args, false, (data) => sendImageToPrinter(data, size));
+	renderImage(args, false, (err, data) => {
+		if (err) return cb(err);
+		sendImageToPrinter(data, size, cb)
+	});
 }
 
-function printQRCode(text) {
+function printQRCode(text, cb) {
+	if (text.trim() === '') return cb('leerer Text geht nicht');
+
 	let ok = false, version = 1, qr;
 
 	while (!ok) {
@@ -149,15 +164,19 @@ function printQRCode(text) {
 		'gray:-'
 	];
 
-	renderImage(args, svg, (data) => sendImageToPrinter(data, size));
+	renderImage(args, svg, (err, data) => {
+		if (err) return cb(err);
+		sendImageToPrinter(data, size, cb)
+	});
 }
 
-function printImage(key) {
+function printImage(key, cb) {
 	var image = images.filter(image => image.key === key);
 	if (image.length !== 1) return;
 
 	fs.readFile(image[0].bin, (err, buffer) => {
-		sendPrintBuffer(buffer);
+		if (err) return cb(err);
+		sendPrintBuffer(buffer, cb);
 	})
 }
 
@@ -179,9 +198,9 @@ function image2buffer(filename, cb) {
 		'gray:-'
 	];
 
-	renderImage(args, false, (data) => {
+	renderImage(args, false, (err, data) => {
 		let size = [720, Math.round(data.length*8/720)];
-		cb(data, size);
+		cb(err, data, size);
 	});
 }
 
@@ -195,16 +214,17 @@ function renderImage(args, input, cb) {
 	child.stdout.on('data', data => result.push(data));
 	child.on('close', () => {
 		result = Buffer.concat(result);
-		cb(result);
+		cb(false, result);
 	});
 }
 
-function sendImageToPrinter(image, size) {
+function sendImageToPrinter(image, size, cb) {
 	if (debug) {
 		var child = child_process.spawn('convert', ['-size',size.join('x'),'-depth',1,'gray:-','-negate','-flop','temp.png']);
 		child.stdin.end(image);
+		cb(false);
 	} else {
-		sendPrintBuffer(createPrintBuffer(image, size));
+		sendPrintBuffer(createPrintBuffer(image, size), cb);
 	}
 }
 
@@ -244,8 +264,13 @@ function createPrintBuffer(image, size) {
 
 }
 
-function sendPrintBuffer(buffer) {
-	fs.writeFile('/dev/usb/lp0', buffer);
+function sendPrintBuffer(buffer, cb) {
+	try {
+		fs.writeFileSync('/dev/usb/lp0', buffer);
+		cb(false);
+	} catch (e) {
+		cb([e.code, e.syscall, e.path].join(' '));
+	}
 }
 
 function getImages(src, bin, web, url) {
@@ -269,7 +294,7 @@ function getImages(src, bin, web, url) {
 
 		if (!existsSync(binFile) || !existsSync(webFile)) {
 			queue.push((done) => {
-				image2buffer(srcFile, (image, size) => {
+				image2buffer(srcFile, (err, image, size) => {
 					var buffer = createPrintBuffer(image, size)
 					fs.writeFileSync(binFile, buffer);
 					var child = child_process.spawn('convert', ['-size',size.join('x'),'-depth',1,'gray:-','-negate','-flop',webFile]);

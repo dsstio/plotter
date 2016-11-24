@@ -12,7 +12,22 @@
 	<link rel="stylesheet" type="text/css" href="/assets/style/main.css">
 </head>
 <body>
-	<div class="container page-wrap">
+	<div class="modal fade" tabindex="-1" role="dialog" id="error-modal">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4>Server meckert:</h4>
+				</div>
+				<div class="modal-body">
+					<p id="error-message"></p>
+				</div>
+			</div>
+		</div>
+	</div>
+		
+	</div>
+	<div class="container page-wrap" id="content">
 		<h1><i class="fa fa-twitter" aria-hidden="true"></i> Plotter</h1>
 
 		<h2>Simple Text</h2>
